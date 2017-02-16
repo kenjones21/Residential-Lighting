@@ -87,6 +87,7 @@ class Category:
         for child in self.children:
             if child.name == name:
                 return child
+        raise Exception("Child " + name + " not found it category " + self.name)
 
     def add_datum(self, light_datum):
         self.light_datum = light_datum
@@ -95,6 +96,6 @@ class Category:
         return self.light_datum
 
 r = ResLight('../Data/reslight_DOE_2012.xlsx', 'DOE')
-search = ["Census Division", "01. New England", "bathrooms", "0 to 1"]
+search = ["Census Division", "01. New England", "bathrooms", "0 to 1f"]
 retrieved = r.light_data.get(search)
 print(retrieved.attributes)
