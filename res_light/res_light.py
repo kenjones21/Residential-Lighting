@@ -94,3 +94,5 @@ class Category:
 
     def get_datum(self):
         return self.light_datum
+
+print("Help")

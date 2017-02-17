@@ -1,3 +1,6 @@
 *~
 *#
 venv/*
+.cache/*
+*.pyc
+ResLight.egg-info/
