@@ -10,6 +10,6 @@ setup(name='ResLight',
       author_email='kbweaver221@gmail.com',
       url='https://www.github.com/kenjones21/Residential-Lighting',
       packages=['res_light'],
-      requires=['openpyxl, zipcode']
+      install_requires=['openpyxl', 'zipcode'],
       tests_require=['pytest']
      )
