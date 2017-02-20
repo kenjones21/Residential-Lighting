@@ -12,6 +12,38 @@ def test_region():
     assert _region("", "CA", "Census Region") == "4. Pacific"
     assert _region("77001", "", "Census Region") == "3. South"
 
+    RECS_Domains = ["01. CT, ME, NH, RI, VT",
+    "23. ID, MT, UT, WY",
+    "02. MA",
+    "12. MO",
+    "03. NY",
+    "24. AZ",
+    "04. NJ",
+    "11. KS, NE",
+    "05. PA",
+    "15. GA",
+    "06. IL",
+    "08. MI",
+    "07. IN, OH",
+    "22. CO",
+    "25. NV, NM",
+    "09. WI",
+    "10. IA, MN, ND, SD",
+    "18. AL, KY, MS",
+    "13. VA",
+    "14. DE, DC, MD, WV",
+    "17. FL",
+    "16. NC, SC",
+    "19. TN",
+    "21. TX",
+    "20. AR, LA, OK",
+    "27. AK, HI, OR, WA",
+    "26. CA"]
+
+    assert _region("19143", "PA", "RECS Domain", RECS_Domains) == "05. PA"
+    assert _region("", "CA", "RECS Domain", RECS_Domains) == "26. CA"
+    assert _region("77001", "", "RECS Domain", RECS_Domains) == "21. TX"
+
 def test_category_list():
     master = Category("Master")
     child1 = master.add(Category("child1"))

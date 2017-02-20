@@ -38,7 +38,7 @@ def estimate_energy(attributes):
     else:
         region = "National"
             
-def _region(zipstring, state, partition):
+def _region(zipstring, state, partition, RECS_Domains=[]):
     if zipstring != "":
         zipc = zipcode.isequal(zipstring) # Initialize zipcode object if we have it
     if zipstring == "" and state == "": # If neither, raise exception
@@ -53,9 +53,9 @@ def _region(zipstring, state, partition):
     else: # If only state, copy to working_state
         working_state = state
     print(working_state)
-    return _state_to_region(working_state, partition)
+    return _state_to_region(working_state, partition, RECS_Domains)
     
-def _state_to_region(state, partition):
+def _state_to_region(state, partition, RECS_Domains):
     if partition == "Census Division":
         if state in ["ME", "NH", "VT", "MA", "CT", "RI"]:
             return "01. New England"
@@ -96,7 +96,13 @@ def _state_to_region(state, partition):
             raise Exception("State not in a census division")
 
     elif partition == "RECS Domain":
-        print("hello")
+        if RECS_Domains == []:
+            raise Exception("RECS_Domains not provided")
+        for name in RECS_Domains:
+            states = name.split()
+            if state in states:
+                return name
+        raise Exception("State not in a RECS Domain")
     
 def _to_initials(state):
     states = {
