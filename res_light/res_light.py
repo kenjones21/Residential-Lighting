@@ -67,7 +67,7 @@ class LightData:
         for cat in categories:
             current_cat = current_cat.get_child(cat)
         return current_cat.get_datum()
-
+            
 class Category:
     def __init__(self, name):
         self.name = name
@@ -76,6 +76,7 @@ class Category:
     def add(self, element):
         "Adds a child category to this category"
         self.children.append(element)
+        return element
 
     def has_child(self, name):
         for child in self.children:
@@ -94,3 +95,11 @@ class Category:
 
     def get_datum(self):
         return self.light_datum
+
+    def category_list(self, hierarchy_level):
+        if hierarchy_level == 0:
+            return [self]
+        children_list = []
+        for child in self.children:
+            children_list = children_list + child.category_list(hierarchy_level - 1)
+        return children_list

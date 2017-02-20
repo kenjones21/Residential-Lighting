@@ -27,14 +27,35 @@ def estimate_energy(attributes):
         if "region" in attributes:
             if _region(zipc.state) != attributes["region"]:
                 raise Exception("Zip does not match region")
-    if "partition" in attributes:
-        partition = attributes["partition"]
+        if "partition" in attributes:
+            partition = attributes["partition"]
+        else:
+            partition = "Census Division"
+        region = _region(zipc.state, partition)
+    elif "state" in attributes:
+        if region in attributes:
+            print("Whatever")
     else:
-        partition = "Census Division"
-    region = _region(zipc.state, partition)
+        region = "National"
+            
+def _region(zipstring, state, partition):
+    if zipstring != "":
+        zipc = zipcode.isequal(zipstring) # Initialize zipcode object if we have it
+    if zipstring == "" and state == "": # If neither, raise exception
+        raise Exception("Need either state or zipstring to return region")
+    if zipstring != "" and state != "": # If both, check for equal
+        if zipc.state != state:
+            raise Exception("State does not match zip")
+        else:
+            working_state = state # Doesn't matter which we pull from
+    elif zipstring != "": # If only zipstring, get state string
+        working_state = zipc.state
+    else: # If only state, copy to working_state
+        working_state = state
+    print(working_state)
+    return _state_to_region(working_state, partition)
     
-        
-def _region(state, partition):
+def _state_to_region(state, partition):
     if partition == "Census Division":
         if state in ["ME", "NH", "VT", "MA", "CT", "RI"]:
             return "01. New England"
@@ -50,7 +71,7 @@ def _region(state, partition):
             return "06. East South Central"
         elif state in ["TX", "OK", "AR", "LA"]:
             return "07. West South Central"
-        elif state in ["ID", "MT", "WY"]: #Just a guess. Can't find info on "mountain north"
+        elif state in ["ID", "MT", "WY"]: # Guess. Can't find info on "mountain north"
             return "08. Mountain North"
         elif state in ["NV", "UT", "CO", "AZ", "NM"]:
             return "09. Mountain South"
@@ -59,6 +80,24 @@ def _region(state, partition):
         else:
             raise Exception("State not in a census region")
 
+    elif partition == "Census Region":
+        if state in ["ME", "NH", "VT", "MA", "CT", "RI", "NY", "PA", "NJ"]:
+            return "1. Northeast"
+        elif state in ["WI", "MI", "IL", "IN", "OH", "ND", "SD",
+                       "NE", "KS", "MN", "IA", "MO"]:
+            return "2. Midwest"
+        elif state in ["KY", "TN", "MS", "AL", "TX", "OK", "AR", "LA", "MD",
+                       "DE", "VA", "WV", "VA", "NC", "SC", "GA", "FL"]:
+            return "3. South"
+        elif state in ["ID", "MT", "WY", "NV", "UT", "CO", "AZ", "NM",
+                       "CA", "AK", "OR", "WA", "HI"]:
+            return "4. Pacific"
+        else:
+            raise Exception("State not in a census division")
+
+    elif partition == "RECS Domain":
+        print("hello")
+    
 def _to_initials(state):
     states = {
         'Alaska': 'AK',
