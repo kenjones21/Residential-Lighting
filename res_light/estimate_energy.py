@@ -1,5 +1,6 @@
-import res_light
+from .data import ResLight
 import zipcode
+import pkg_resources
 
 def estimate_energy(attributes):
     """ 
@@ -19,22 +20,33 @@ def estimate_energy(attributes):
       partition: (string) partition method for country. Census Division, 
                  Census Region, RECS
     """
+    filename = pkg_resources.resource_filename("res_light", "data/reslight_DOE_2012.xlsx")
+    rl = ResLight(filename, "DOE")
+    recs_domains = rl.light_data.data.get_child("RECS Domain").category_list(1)
+    if "partition" in attributes:
+        partition = attributes["partition"]
+    else:
+        partition = "RECS Domain" # Use most specific partitioning
     if "zip" in attributes:
         zipc = zipcode.isequal(attributes["zip"])
+
         if "state" in attributes:
             if zipc.state != attributes["state"]:
                 raise Exception("State does not match zip")
+            
         if "region" in attributes:
             if _region(zipc.state) != attributes["region"]:
                 raise Exception("Zip does not match region")
-        if "partition" in attributes:
-            partition = attributes["partition"]
-        else:
-            partition = "Census Division"
-        region = _region(zipc.state, partition)
+            
+        region = _region("", zipc.state, partition, recs_domains)
+        
     elif "state" in attributes:
-        if region in attributes:
-            print("Whatever")
+        if "region" in attributes:
+            state = attributes["state"]
+            region2 = _region("", state, partition, RECS_Domains)
+            if region != region2:
+                raise Exception("State does not match region")
+            
     else:
         region = "National"
             
@@ -98,10 +110,10 @@ def _state_to_region(state, partition, RECS_Domains):
     elif partition == "RECS Domain":
         if RECS_Domains == []:
             raise Exception("RECS_Domains not provided")
-        for name in RECS_Domains:
-            states = name.split()
+        for cat in RECS_Domains:
+            states = cat.name.split()
             if state in states:
-                return name
+                return cat.name
         raise Exception("State not in a RECS Domain")
     
 def _to_initials(state):

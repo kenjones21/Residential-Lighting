@@ -1,4 +1,4 @@
-from res_light.res_light import Category, ResLight, LightDatum, LightData
+from res_light.data import Category, ResLight, LightDatum, LightData
 from res_light.estimate_energy import _region
 import pytest
 
