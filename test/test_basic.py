@@ -1,5 +1,5 @@
 from res_light.data import Category, ResLight, LightDatum, LightData
-from res_light.estimate_energy import _region
+from res_light.estimate_energy import _region, estimate_energy
 import pytest
 
 def test_region():
@@ -54,4 +54,8 @@ def test_category_list():
     assert master.category_list(0) == [master]
     assert master.category_list(1) == [child1, child2]
     assert master.category_list(2) == [child3, child4, child5]
+    
+def test_estimate_energy():
+    attr = {"zip": "19143", "partition": "RECS Domain", "num_beds": 3}
+    assert estimate_energy(attr) == 4375.29
     

@@ -21,8 +21,11 @@ def estimate_energy(attributes):
                  Census Region, RECS
     """
     filename = pkg_resources.resource_filename("res_light", "data/reslight_DOE_2012.xlsx")
-    rl = ResLight(filename, "DOE")
+    rl = ResLight(filename, "DOE") # TODO: Do this in init
     recs_domains = rl.light_data.data.get_child("RECS Domain").category_list(1)
+    recs_names = []
+    for cat in recs_domains:
+        recs_names.append(cat.name)
     if "partition" in attributes:
         partition = attributes["partition"]
     else:
@@ -38,17 +41,65 @@ def estimate_energy(attributes):
             if _region(zipc.state) != attributes["region"]:
                 raise Exception("Zip does not match region")
             
-        region = _region("", zipc.state, partition, recs_domains)
+        region = _region("", zipc.state, partition, recs_names)
         
     elif "state" in attributes:
         if "region" in attributes:
             state = attributes["state"]
-            region2 = _region("", state, partition, RECS_Domains)
+            region2 = _region("", state, partition, recs_names)
             if region != region2:
                 raise Exception("State does not match region")
             
     else:
         region = "National"
+        partition = "National" # Reset partition in case it was not set explicitly
+
+    categories = [partition, region]
+
+    if "size" in attributes:
+        if "num_baths" in attributes or "num_beds" in attributes:
+            raise Exception("Only one of size, num_baths, or num_beds is accepted")
+        size = attributes["size"]
+        if size == "small":
+            num_beds = "0 to 1"
+        elif size == "medium":
+            num_beds = "2 to 3"
+        elif size == "large":
+            num_beds = "4 or more"
+        else:
+            raise Exception("Size must be small, medium, or large")
+        if "room" not in attributes:
+            categories.append("bedrooms")
+            categories.append(num_beds)
+        else:
+            room = attributes["room"]
+            categories.append("bedrooms space")
+            categories.append(num_beds + ", " + room) # Assume room is ok. TODO: Check
+    elif "num_beds" in attributes:
+        if "num_baths" in attributes:
+            raise Exception("Only one of num_baths or num_beds is accepted")
+        num_beds = _beds_to_str(attributes["num_beds"])
+        if "room" not in attributes:
+            categories.append("bedrooms")
+            categories.append(num_beds)
+        else:
+            room = attributes["room"]
+            categories.append("bedrooms space")
+            categories.append(num_beds + ", " + room) # Assume room is ok. TODO: Check
+    elif "num_baths" in attributes:
+        num_baths = _baths_to_str(attributes["num_baths"])
+        if "room" not in attributes:
+            categories.append("bathrooms")
+            categories.append(num_baths)
+        else:
+            room = attributes["room"]
+            categories.append("bathrooms space")
+            categories.append(num_baths + ", " + room) # Assume room is ok. TODO: Check
+
+    # Categories are defined; retrieve data
+    datum = rl.light_data.get(categories)
+    if "month" not in attributes:
+        return datum.attributes["Daily Energy Consumption per Household (Wh)"]
             
 def _region(zipstring, state, partition, RECS_Domains=[]):
     if zipstring != "":
@@ -110,10 +161,10 @@ def _state_to_region(state, partition, RECS_Domains):
     elif partition == "RECS Domain":
         if RECS_Domains == []:
             raise Exception("RECS_Domains not provided")
-        for cat in RECS_Domains:
-            states = cat.name.split()
+        for name in RECS_Domains:
+            states = name.split()
             if state in states:
-                return cat.name
+                return name
         raise Exception("State not in a RECS Domain")
     
 def _to_initials(state):
@@ -177,3 +228,23 @@ def _to_initials(state):
         'Wyoming': 'WY'
     }
     return states[state]
+
+def _beds_to_str(num_beds_int):
+    if num_beds_int == 0 or num_beds_int == 1:
+        return "0 to 1"
+    elif num_beds_int == 2 or num_beds_int == 3:
+        return "2 to 3"
+    elif num_beds_int >= 4:
+        return "4 or more"
+    else:
+        raise Exception("num_beds_int is not a valid integer")
+
+def _baths_to_str(num_baths_int):
+    if num_baths_int == 0 or num_baths_int == 1:
+        return "0 to 1"
+    elif num_baths_int == 2:
+        return "2"
+    elif num_baths_int >=3:
+        return "3 or more"
+    else:
+        raise Exception("num_baths_int is not a valid integer")
