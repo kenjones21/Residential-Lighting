@@ -2,6 +2,10 @@ from .data import ResLight
 import zipcode
 import pkg_resources
 
+if (not "rl" in globals()):
+    filename = pkg_resources.resource_filename("res_light", "data/reslight_DOE_2012.xlsx")
+    rl = ResLight(filename, "DOE") # TODO: Do this in init
+
 def estimate_energy(attributes):
     """ 
     Estimates energy use given a dictionary of attributes.
@@ -20,8 +24,6 @@ def estimate_energy(attributes):
       partition: (string) partition method for country. Census Division, 
                  Census Region, RECS
     """
-    filename = pkg_resources.resource_filename("res_light", "data/reslight_DOE_2012.xlsx")
-    rl = ResLight(filename, "DOE") # TODO: Do this in init
     recs_domains = rl.light_data.data.get_child("RECS Domain").category_list(1)
     recs_names = []
     for cat in recs_domains:
