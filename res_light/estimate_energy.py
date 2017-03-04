@@ -24,79 +24,10 @@ def estimate_energy(attributes):
       partition: (string) partition method for country. Census Division, 
                  Census Region, RECS
     """
-    recs_domains = rl.light_data.data.get_child("RECS Domain").category_list(1)
-    recs_names = []
-    for cat in recs_domains:
-        recs_names.append(cat.name)
-    if "partition" in attributes:
-        partition = attributes["partition"]
-    else:
-        partition = "RECS Domain" # Use most specific partitioning
-    if "zip" in attributes:
-        zipc = zipcode.isequal(attributes["zip"])
 
-        if "state" in attributes:
-            if zipc.state != attributes["state"]:
-                raise Exception("State does not match zip")
-            
-        if "region" in attributes:
-            if _region(zipc.state) != attributes["region"]:
-                raise Exception("Zip does not match region")
-            
-        region = _region("", zipc.state, partition, recs_names)
-        
-    elif "state" in attributes:
-        if "region" in attributes:
-            state = attributes["state"]
-            region2 = _region("", state, partition, recs_names)
-            if region != region2:
-                raise Exception("State does not match region")
-            
-    else:
-        region = "National"
-        partition = "National" # Reset partition in case it was not set explicitly
-
-    categories = [partition, region]
-
-    if "size" in attributes:
-        if "num_baths" in attributes or "num_beds" in attributes:
-            raise Exception("Only one of size, num_baths, or num_beds is accepted")
-        size = attributes["size"]
-        if size == "small":
-            num_beds = "0 to 1"
-        elif size == "medium":
-            num_beds = "2 to 3"
-        elif size == "large":
-            num_beds = "4 or more"
-        else:
-            raise Exception("Size must be small, medium, or large")
-        if "room" not in attributes:
-            categories.append("bedrooms")
-            categories.append(num_beds)
-        else:
-            room = attributes["room"]
-            categories.append("bedrooms space")
-            categories.append(num_beds + ", " + room) # Assume room is ok. TODO: Check
-    elif "num_beds" in attributes:
-        if "num_baths" in attributes:
-            raise Exception("Only one of num_baths or num_beds is accepted")
-        num_beds = _beds_to_str(attributes["num_beds"])
-        if "room" not in attributes:
-            categories.append("bedrooms")
-            categories.append(num_beds)
-        else:
-            room = attributes["room"]
-            categories.append("bedrooms space")
-            categories.append(num_beds + ", " + room) # Assume room is ok. TODO: Check
-    elif "num_baths" in attributes:
-        num_baths = _baths_to_str(attributes["num_baths"])
-        if "room" not in attributes:
-            categories.append("bathrooms")
-            categories.append(num_baths)
-        else:
-            room = attributes["room"]
-            categories.append("bathrooms space")
-            categories.append(num_baths + ", " + room) # Assume room is ok. TODO: Check
+    partition, region = _partition_region(attributes)
+    char_partition, char = _partition_char(attributes)
+    categories = [partition, region, char_partition, char]
 
     # Categories are defined; retrieve data
     datum = rl.light_data.get(categories)
@@ -250,3 +181,80 @@ def _baths_to_str(num_baths_int):
         return "3 or more"
     else:
         raise Exception("num_baths_int is not a valid integer")
+
+def _partition_region(attributes):
+    recs_domains = rl.light_data.data.get_child("RECS Domain").category_list(1)
+    recs_names = []
+    for cat in recs_domains:
+        recs_names.append(cat.name)
+    if "partition" in attributes:
+        partition = attributes["partition"]
+    else:
+        partition = "RECS Domain" # Use most specific partitioning
+    if "zip" in attributes:
+        zipc = zipcode.isequal(attributes["zip"])
+
+        if "state" in attributes:
+            if zipc.state != attributes["state"]:
+                raise Exception("State does not match zip")
+            
+        if "region" in attributes:
+            if _region(zipc.state) != attributes["region"]:
+                raise Exception("Zip does not match region")
+            
+        region = _region("", zipc.state, partition, recs_names)
+        
+    elif "state" in attributes:
+        if "region" in attributes:
+            state = attributes["state"]
+            region2 = _region("", state, partition, recs_names)
+            if region != region2:
+                raise Exception("State does not match region")
+            
+    else:
+        region = "National"
+        partition = "National" # Reset partition in case it was not set explicitly
+
+    return partition, region
+
+def _partition_char(attributes):
+    if "size" in attributes:
+        if "num_baths" in attributes or "num_beds" in attributes:
+            raise Exception("Only one of size, num_baths, or num_beds is accepted")
+        size = attributes["size"]
+        if size == "small":
+            num_beds = "0 to 1"
+        elif size == "medium":
+            num_beds = "2 to 3"
+        elif size == "large":
+            num_beds = "4 or more"
+        else:
+            raise Exception("Size must be small, medium, or large")
+        if "room" not in attributes:
+            char_partition = "bedrooms"
+            char = num_beds
+        else:
+            room = attributes["room"]
+            char_partition = "bedrooms space"
+            char = num_beds + ", " + room # Assume room is ok. TODO: Check
+    elif "num_beds" in attributes:
+        if "num_baths" in attributes:
+            raise Exception("Only one of num_baths or num_beds is accepted")
+        num_beds = _beds_to_str(attributes["num_beds"])
+        if "room" not in attributes:
+            char_partition = "bedrooms"
+            char = num_beds
+        else:
+            room = attributes["room"]
+            char_partition = "bedrooms space"
+            char = num_beds + ", " + room # Assume room is ok. TODO: Check
+    elif "num_baths" in attributes:
+        num_baths = _baths_to_str(attributes["num_baths"])
+        if "room" not in attributes:
+            char_partition = "bathrooms"
+            char = num_baths
+        else:
+            room = attributes["room"]
+            char_partition = "bathrooms space"
+            char = num_baths + ", " + room # Assume room is ok. TODO: Check
+    return char_partition, char
