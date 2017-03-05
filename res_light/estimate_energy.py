@@ -33,6 +33,13 @@ def estimate_energy(attributes):
     datum = rl.light_data.get(categories)
     if "month" not in attributes:
         return datum.attributes["Daily Energy Consumption per Household (Wh)"]
+    else:
+        month_str = attributes["month"][:3].capitalize()
+        month_str += " Daily HOU per Lamp"
+        HOU_per_lamp = datum.attributes[month_str]
+        num_lamps = datum.attributes["Number of Lamps \nper Household"]
+        lamp_power = datum.attributes["Lamp Power (Watts)"]
+        return HOU_per_lamp * num_lamps * lamp_power
             
 def _region(zipstring, state, partition, RECS_Domains=[]):
     if zipstring != "":

@@ -58,4 +58,6 @@ def test_category_list():
 def test_estimate_energy():
     attr = {"zip": "19143", "partition": "RECS Domain", "num_beds": 3}
     assert estimate_energy(attr) == 4375.29
+    attr["month"] = "january"
+    assert estimate_energy(attr) == 1.81042 * 58.166 * 43.341
     
