@@ -2,9 +2,9 @@ from .data import ResLight
 import zipcode
 import pkg_resources
 
-if (not "rl" in globals()):
+if (not "_rl" in globals()):
     filename = pkg_resources.resource_filename("res_light", "data/reslight_DOE_2012.xlsx")
-    rl = ResLight(filename, "DOE") # TODO: Do this in init
+    _rl = ResLight(filename, "DOE") # TODO: Do this in init
 
 def estimate_energy(attributes):
     """ 
@@ -30,7 +30,7 @@ def estimate_energy(attributes):
     categories = [partition, region, char_partition, char]
 
     # Categories are defined; retrieve data
-    datum = rl.light_data.get(categories)
+    datum = _rl.light_data.get(categories)
     if "month" not in attributes:
         return datum.attributes["Daily Energy Consumption per Household (Wh)"]
     else:
@@ -43,7 +43,7 @@ def estimate_HOU(attributes):
     partition, region = _partition_region(attributes)
     char_partition, char = _partition_char(attributes)
     categories = [partition, region, char_partition, char]
-    datum = rl.light_data.get(categories)
+    datum = _rl.light_data.get(categories)
     if "month" not in attributes:
         return datum.attributes["Daily HOU per Lamp"]
     else:
@@ -200,7 +200,7 @@ def _baths_to_str(num_baths_int):
         raise Exception("num_baths_int is not a valid integer")
 
 def _partition_region(attributes):
-    recs_domains = rl.light_data.data.get_child("RECS Domain").category_list(1)
+    recs_domains = _rl.light_data.data.get_child("RECS Domain").category_list(1)
     recs_names = []
     for cat in recs_domains:
         recs_names.append(cat.name)
