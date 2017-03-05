@@ -1,5 +1,5 @@
 from res_light.data import Category, ResLight, LightDatum, LightData
-from res_light.estimate_energy import _region, estimate_energy
+from res_light.estimate_energy import _region, estimate_energy, estimate_HOU
 import pytest
 
 def test_region():
@@ -60,4 +60,14 @@ def test_estimate_energy():
     assert estimate_energy(attr) == 4375.29
     attr["month"] = "january"
     assert estimate_energy(attr) == 1.81042 * 58.166 * 43.341
+    attr = {"zip": "19143", "partition": "RECS Domain", "num_beds": 3, "room": "Kitchen"}
+    assert estimate_energy(attr) == 444.34
+
+def test_estimate_HOU():
+    attr = {"zip": "19143", "partition": "RECS Domain", "num_beds": 3}
+    assert estimate_HOU(attr) == 1.66739
+    attr["month"] = "march"
+    assert estimate_HOU(attr) == 1.6844
+    attr = {"zip": "19143", "partition": "RECS Domain", "num_beds": 3, "room": "Kitchen"}
+    assert estimate_HOU(attr) == 2.41674
     
