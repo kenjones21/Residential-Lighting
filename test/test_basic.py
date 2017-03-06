@@ -62,6 +62,9 @@ def test_estimate_energy():
     assert estimate_energy(attr) == 1.81042 * 58.166 * 43.341
     attr = {"zip": "19143", "partition": "RECS Domain", "num_beds": 3, "room": "Kitchen"}
     assert estimate_energy(attr) == 444.34
+    attr = {"zip": "19143", "partition": "RECS Domain", "num_beds": 3, "room": "Kitchn"}
+    with pytest.raises(Exception):
+        estimate_energy(attr)
 
 def test_estimate_HOU():
     attr = {"zip": "19143", "partition": "RECS Domain", "num_beds": 3}
@@ -70,4 +73,6 @@ def test_estimate_HOU():
     assert estimate_HOU(attr) == 1.6844
     attr = {"zip": "19143", "partition": "RECS Domain", "num_beds": 3, "room": "Kitchen"}
     assert estimate_HOU(attr) == 2.41674
-    
+    attr = {"zip": "19143", "partition": "RECS Domain", "num_beds": 3, "room": "Kitchn"}
+    with pytest.raises(Exception):
+        estimate_energy(attr)

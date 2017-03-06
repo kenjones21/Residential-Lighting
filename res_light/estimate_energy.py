@@ -34,6 +34,7 @@ def estimate_energy(attributes):
     if "month" not in attributes:
         return datum.attributes["Daily Energy Consumption per Household (Wh)"]
     else:
+        # Use montly HOU estimates to guess at energy usage
         HOU_per_lamp = estimate_HOU(attributes)
         num_lamps = datum.attributes["Number of Lamps \nper Household"]
         lamp_power = datum.attributes["Lamp Power (Watts)"]
@@ -252,6 +253,8 @@ def _partition_char(attributes):
             char = num_beds
         else:
             room = attributes["room"]
+            if not _is_valid_room(room):
+                raise Exception("Room is invalid")
             char_partition = "bedrooms space"
             char = num_beds + ", " + room # Assume room is ok. TODO: Check
     elif "num_beds" in attributes:
@@ -262,7 +265,9 @@ def _partition_char(attributes):
             char_partition = "bedrooms"
             char = num_beds
         else:
-            room = attributes["room"]
+            room = attributes["room"].capitalize()
+            if not _is_valid_room(room):
+                raise Exception("Room is invalid")
             char_partition = "bedrooms space"
             char = num_beds + ", " + room # Assume room is ok. TODO: Check
     elif "num_baths" in attributes:
@@ -272,6 +277,13 @@ def _partition_char(attributes):
             char = num_baths
         else:
             room = attributes["room"]
+            if not _is_valid_room(room):
+                raise Exception("Room is invalid")
             char_partition = "bathrooms space"
             char = num_baths + ", " + room # Assume room is ok. TODO: Check
     return char_partition, char
+
+def _is_valid_room(room):
+    rooms = ["Bathroom", "Bedroom", "Dining Room", "Exterior", "Garage", "Hallway",
+             "Kitchen", "Living Room", "Office", "Other Room"]
+    return room in rooms
