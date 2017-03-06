@@ -41,6 +41,22 @@ def estimate_energy(attributes):
         return HOU_per_lamp * num_lamps * lamp_power
 
 def estimate_HOU(attributes):
+    """
+    Estimates hours of use (HOU) for given attributes
+      zip:       (int/string) indicates zip code of residence
+      state:     (string) indicates state for household. Use initials
+      region:    (string) indicates region for household
+      room:      (string) specifies room to estimate energy. If blank, 
+                 whole residence is assumed
+      month:     (string) month to get energy for. If blank, yearly 
+                 energy assumed
+      size:      (string) indicates size of house. "small", "medium", 
+                 or "large"
+      num_baths: (int) number of bathrooms. Used as proxy for house size
+      num_beds"  (int) number of bedrooms. Used as proxy for house size
+      partition: (string) partition method for country. Census Division, 
+                 Census Region, RECS
+    """
     partition, region = _partition_region(attributes)
     char_partition, char = _partition_char(attributes)
     categories = [partition, region, char_partition, char]
@@ -53,6 +69,9 @@ def estimate_HOU(attributes):
         return datum.attributes[month_str]
             
 def _region(zipstring, state, partition, RECS_Domains=[]):
+    """
+    Given a zipstring or state, returns the corresponding region
+    """
     if zipstring != "":
         zipc = zipcode.isequal(zipstring) # Initialize zipcode object if we have it
     if zipstring == "" and state == "": # If neither, raise exception
@@ -70,6 +89,10 @@ def _region(zipstring, state, partition, RECS_Domains=[]):
     return _state_to_region(working_state, partition, RECS_Domains)
     
 def _state_to_region(state, partition, RECS_Domains):
+    """
+    given a state, its partitions, and (optionally) RECS Domains, 
+    returns the region the state belongs to
+    """
     if partition == "Census Division":
         if state in ["ME", "NH", "VT", "MA", "CT", "RI"]:
             return "01. New England"
@@ -119,6 +142,9 @@ def _state_to_region(state, partition, RECS_Domains):
         raise Exception("State not in a RECS Domain")
     
 def _to_initials(state):
+    """
+    Given a state, returns its initials
+    """
     states = {
         'Alaska': 'AK',
         'Alabama': 'AL',
@@ -181,6 +207,9 @@ def _to_initials(state):
     return states[state]
 
 def _beds_to_str(num_beds_int):
+    """
+    Retrieves a bath string from a number of bathrooms
+    """
     if num_beds_int == 0 or num_beds_int == 1:
         return "0 to 1"
     elif num_beds_int == 2 or num_beds_int == 3:
@@ -191,6 +220,9 @@ def _beds_to_str(num_beds_int):
         raise Exception("num_beds_int is not a valid integer")
 
 def _baths_to_str(num_baths_int):
+    """
+    Retrieves a bath string from a number of bathrooms
+    """
     if num_baths_int == 0 or num_baths_int == 1:
         return "0 to 1"
     elif num_baths_int == 2:
@@ -201,6 +233,9 @@ def _baths_to_str(num_baths_int):
         raise Exception("num_baths_int is not a valid integer")
 
 def _partition_region(attributes):
+    """
+    Retrieves region partition and region from a list of attributes
+    """
     recs_domains = _rl.light_data.data.get_child("RECS Domain").category_list(1)
     recs_names = []
     for cat in recs_domains:
@@ -236,6 +271,10 @@ def _partition_region(attributes):
     return partition, region
 
 def _partition_char(attributes):
+    """
+    Retrieves characteristic partition and characteristic itself 
+    from a given dictionary of attributes
+    """
     if "size" in attributes:
         if "num_baths" in attributes or "num_beds" in attributes:
             raise Exception("Only one of size, num_baths, or num_beds is accepted")
